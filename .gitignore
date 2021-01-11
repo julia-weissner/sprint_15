@@ -1,5 +1,16 @@
-# Object file
-*.o
+# Logs
+logs
+*.log
+npm-debug.log*
 
-# Ada Library Information
-*.ali
+# Dependency directory
+node_modules
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.DS_Store
+.idea
+.vscode
+.env

@@ -1,0 +1,43 @@
+{
+  "name": "sprint_12_express",
+  "version": "1.0.0",
+  "description": "## https://sprint_12_express.github.io/",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/julia-weissner/sprint_12_express.git"
+  },
+  "keywords": [],
+  "author": {
+    "name": "Yulia Weissner",
+    "email": "Ivashchik.Juliya@yandex.ru"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/julia-weissner/sprint_12_express/issues"
+  },
+  "homepage": "https://github.com/julia-weissner/sprint_12_express#readme",
+  "devDependencies": {
+    "babel-eslint": "^10.1.0",
+    "eslint": "^7.14.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-react": "^7.21.5",
+    "nodemon": "^2.0.6"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-rate-limit": "^5.2.3",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.11.6",
+    "validator": "^13.5.2"
+  }
+}
