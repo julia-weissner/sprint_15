@@ -1,8 +1,9 @@
 # Проект по теме "Подготовка и деплой бэкенда"
 
 ## IP-адрес сервера: 84.201.163.208
-## Домен: julia.weiss.students.nomoreparties.xyz    
-##        www.julia.weiss.students.nomoreparties.xyz
+## Домен: 
+## julia.weiss.students.nomoreparties.xyz    
+## www.julia.weiss.students.nomoreparties.xyz
 
 ### https://sprint_15.github.io/
 
