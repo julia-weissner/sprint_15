@@ -2,38 +2,45 @@ require('dotenv').config();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const NotFoundError = require('../errors/not-found-err');
+const BadRequestError = require('../errors/bad-request-err');
+const ConflictError = require('../errors/conflict-err');
+const UnauthorizedError = require('../errors/unauth-err');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
-module.exports.getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.send({ data: users }))
-    .catch((err) => res.status(500).send({ message: `На сервере произошла ошибка ${err}` }));
-};
+module.exports.getUsers = (req, res, next) => User
+  .find({})
+  .then((users) => {
+    if (!users.length) {
+      throw new NotFoundError('Пока нет пользователей');
+    }
+    res.send({ data: users });
+  })
+  .catch(next);
 
-module.exports.getUserById = (req, res) => {
+module.exports.getUserById = (req, res, next) => {
   const userId = req.params.id;
   User.findById(userId)
     .orFail(new Error('Not Found'))
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.message === 'Not Found') {
-        res.status(404).send({ message: 'Пользователя с таким id нет в базе данных' });
+        next(new NotFoundError('Пользователя с таким id нет в базе данных'));
       } else if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Переданы невалидные данные' });
+        next(new BadRequestError('Переданы невалидные данные'));
       } else {
-        res.status(500).send({ message: 'На сервере произошла ошибка' });
+        next(err);
       }
     });
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
   if (password.length < 8 || password.trim().length === 0) {
-    res.status(400).send({ message: 'Некорректный пароль' });
-    return;
+    throw new BadRequestError('Некорректный пароль');
   }
   bcrypt.hash(req.body.password, 10)
     .then((hash) => User.create({
@@ -48,16 +55,16 @@ module.exports.createUser = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: `Ошибка валидации ${err}` });
+        next(new BadRequestError('Ошибка валидации'));
       } else if (err.code === 11000) {
-        res.status(409).send({ message: 'E-Mail уже зарегистрирован' });
+        next(new ConflictError('E-Mail уже зарегистрирован'));
       } else {
-        res.status(500).send({ message: 'Ошибка сервера' });
+        next(err);
       }
     });
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
   return User.findUserByCredentials(email, password)
@@ -66,6 +73,6 @@ module.exports.login = (req, res) => {
       return res.status(201).cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true, sameSite: true }).send({ token });
     })
     .catch((err) => {
-      res.status(401).send({ message: err.message });
+      next(new UnauthorizedError(err.message));
     });
 };

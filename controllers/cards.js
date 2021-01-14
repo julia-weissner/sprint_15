@@ -1,46 +1,51 @@
 require('dotenv').config();
 const Card = require('../models/card');
+const BadRequestError = require('../errors/bad-request-err');
+const ForbiddenError = require('../errors/forbidden-err');
+const NotFoundError = require('../errors/not-found-err');
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.send({ data: cards }))
-    .catch((err) => res.status(500).send({ message: `На сервере произошла ошибка ${err}` }));
+    .catch(next);
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link, owner = req.user._id } = req.body;
   Card.create({ name, link, owner })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Некорректные данные' });
+        next(new BadRequestError('Некорректные данные'));
       } else {
-        res.status(500).send({ message: 'На сервере произошла ошибка' });
+        next(err);
       }
     });
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
   Card.findById(req.params.id)
     .orFail(new Error('Not Found'))
     .then((card) => {
       if (req.user._id.toString() !== card.owner.toString()) {
-        res.status(403).send({ message: `Невозможно удалить карточку, которую вы не создавали, ${req.user._id}, ${card.owner._id}` });
+        throw new ForbiddenError('Невозможно удалить карточку, которую вы не создавали');
       } else {
         Card.deleteOne(card)
           .then(() => res.send({ data: card }))
           .catch((err) => {
             if (err.message === 'CastError') {
-              res.status(400).send({ message: 'Некорректные данные' });
+              next(new BadRequestError('Некорректные данные'));
             } else {
-              res.status(500).send({ message: 'На сервере произошла ошибка' });
+              next(err);
             }
           });
       }
     })
     .catch((err) => {
       if (err.message === 'Not Found') {
-        res.status(404).send({ message: 'Карточки нет в базе.' });
-      } else { res.status(500).send({ message: 'На сервере произошла ошибка.' }); }
+        next(new NotFoundError('Карточки нет в базе.'));
+      } else {
+        next(err);
+      }
     });
 };
